@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>व्यापक साइकोमेट्रिक विश्लेषण (Comprehensive Psychometric Analysis - v6)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        /* Custom Styles and Theme Setup */
+        :root {
+            --primary-color: #4f46e5; /* Indigo-600 */
+            --background-light: #f9fafb;
+            --surface-light: #ffffff;
+            --text-light: #1f2937;
+            --background-dark: #0f172a; /* Slate-900 */
+            --surface-dark: #1e293b; /* Slate-800 */
+            --text-dark: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Light Mode */
+        .light {
+            background-color: var(--background-light);
+            color: var(--text-light);
+        }
+        .light .card {
+            background-color: var(--surface-light);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Dark Mode */
+        .dark {
+            background-color: var(--background-dark);
+            color: var(--text-dark);
+        }
+        .dark .card {
+            background-color: var(--surface-dark);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.08);
+        }
+        
+        /* Custom Rating Label Style */
+        .rating-label {
+            cursor: pointer;
+            padding: 8px 10px;
+            border-radius: 9999px; /* rounded-full */
+            border: 1px solid #d1d5db; /* border-gray-300 */
+            text-align: center;
+            font-size: 0.75rem; /* text-xs */
+            font-weight: 500; /* font-medium */
+            transition: all 0.2s;
+            flex-grow: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .dark .rating-label { border-color: #4b5563; }
+        
+        /* Radio Checked State */
+        .light input[type="radio"]:checked + .rating-label {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            transform: scale(1.05);
+        }
+        .dark input[type="radio"]:checked + .rating-label {
+            background-color: #6366f1; /* indigo-500 */
+            color: white;
+            border-color: #6366f1;
+            transform: scale(1.05);
+        }
+        .rating-label:hover { background-color: #eff6ff; border-color: #bfdbfe; }
+        .dark .rating-label:hover { background-color: #334155; border-color: #475569; }
+
+        /* Loading Spinner */
+        .loader {
+            border-top-color: var(--primary-color);
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Progress Bar */
+        .progress-bar-container {
+            width: 100%;
+            background-color: #e5e7eb; /* gray-200 */
+            border-radius: 9999px;
+            overflow: hidden;
+            position: sticky;
+            top: 10px;
+            z-index: 10;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .dark .progress-bar-container { background-color: #374151; /* gray-700 */ }
+        .progress-bar {
+            height: 30px;
+            background: linear-gradient(90deg, #4f46e5, #a855f7); /* Indigo to Purple */
+            width: 0%;
+            transition: width 0.4s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+        
+        /* NEW: Timer Style */
+        #timer {
+            position: fixed;
+            top: 80px;
+            right: 1rem;
+            z-index: 20;
+            background-color: var(--surface-light);
+            color: var(--text-light);
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 1.5rem; /* 24px */
+            font-weight: 700;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+        }
+        .dark #timer {
+            background-color: var(--surface-dark);
+            color: var(--text-dark);
+            border-color: #374151;
+        }
+        
+        /* NEW: Leaderboard Style */
+        #leaderboardSection {
+            transition: all 0.3s ease-in-out;
+            border-top: 2px solid #e0e7ff;
+            background: linear-gradient(180deg, #f9fafb 0%, #ffffff 100%);
+        }
+        .dark #leaderboardSection {
+            border-top-color: #312e81;
+            background: linear-gradient(180deg, #0f172a 0%, #1a233a 100%);
+        }
+        
+        /* Print Styles */
+        @media print {
+            body { padding: 0; margin: 0; }
+            .no-print { display: none !important; }
+            .card { box-shadow: none; border: 1px solid #e5e7eb; }
+            .print-container { max-width: 100% !important; margin: 0; padding: 0; }
+            #resultsScreen { transform: scale(1) !important; display: block !important; }
+            canvas { max-height: 400px !important; }
+        }
+        
+        /* NEW: Certificate Template Style (More Professional) */
+        #certificateTemplate {
+            width: 1100px;
+            height: 850px;
+            background: #ffffff;
+            color: #1f2937;
+            font-family: 'Inter', sans-serif;
+            border: 1px solid #d1d5db;
+            padding: 40px;
+            box-sizing: border-box;
+            position: absolute;
+            left: -9999px; /* Off-screen */
+            top: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* Guilloche pattern background */
+            background-image: radial-gradient(#e0e7ff 1px, transparent 1px),
+                              radial-gradient(#e0e7ff 1px, #ffffff 1px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            /* Inner border */
+            box-shadow: inset 0 0 0 15px #4f46e5;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 sm:p-8">
+
+    <div class="fixed top-4 right-4 z-50 no-print flex gap-2">
+        <button id="leaderboardToggleBtn" class="p-3 bg-white dark:bg-gray-800 rounded-full shadow-lg transition-all hover:scale-110">
+            <svg class="w-6 h-6 text-yellow-500" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2Zm0 15a1 1 0 0 0 1-1v-3a1 1 0 0 0-2 0v3a1 1 0 0 0 1 1Zm-1-6a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm6-3.586a1 1 0 0 0-1.414 0L14 7.001l-2.586-2.587a1 1 0 0 0-1.414 0L7.001 7.001 4.415 4.415a1 1 0 0 0-1.414 1.414L5.587 8.415l2.587 2.586a1 1 0 0 0 1.414 0L14 8.415l2.586 2.586a1 1 0 0 0 1.414-1.414L15.415 7.001l2.586-2.587a1 1 0 0 0 0-1.414Z" clip-rule="evenodd" fill-rule="evenodd"></path></svg>
+        </button>
+        
+        <label for="themeToggle" class="flex items-center cursor-pointer p-2 bg-white dark:bg-gray-800 rounded-full shadow-lg">
+            <div class="relative">
+                <input type="checkbox" id="themeToggle" class="sr-only">
+                <div class="block bg-gray-300 dark:bg-gray-700 w-14 h-8 rounded-full"></div>
+                <div class="dot absolute left-1 top-1 bg-white dark:bg-gray-200 w-6 h-6 rounded-full transition transform translate-x-0 dark:translate-x-full flex items-center justify-center">
+                    <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.485 5.148a.75.75 0 01-.527-.22L4.72 2.623a.75.75 0 111.06-1.06l2.238 2.238a.75.75 0 01-.527 1.298zM2.25 12a.75.75 0 01.75-.75h2.25a.75.75 0 010 1.5H3a.75.75 0 01-.75-.75zM4.72 21.377a.75.75 0 011.06-1.06l2.238 2.238a.75.75 0 11-1.06 1.06L4.72 21.377zM12 18.75a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0v-2.25a.75.75 0 01.75-.75zM16.515 5.148a.75.75 0 01-.527-1.298l2.238-2.238a.75.75 0 111.06 1.06l-2.238 2.238a.75.75 0 01-.527.22zM21 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010 1.5h2.25a.75.75 0 01.75.75zM18.742 21.377a.75.75 0 01-1.06-1.06l2.238-2.238a.75.75 0 111.06 1.06l-2.238 2.238zM12 7.5a4.5 4.5 0 100 9 4.5 4.5 0 000-9z"/></svg>
+                </div>
+            </div>
+        </label>
+    </div>
+
+    <div id="shareNotification" class="fixed top-20 right-4 z-50 bg-green-500 text-white py-2 px-4 rounded-lg shadow-lg transition-all transform translate-x-full opacity-0 no-print">
+        परिणाम क्लिपबोर्ड पर कॉपी किए गए!
+    </div>
+    
+    <div id="timer" class="hidden no-print">15:00</div>
+
+    <main class="max-w-6xl mx-auto print-container">
+        
+        <header class="text-center mb-8 no-print">
+            <h1 class="text-4xl sm:text-5xl font-extrabold text-indigo-700 dark:text-indigo-400 mb-2">व्यापक साइकोमेट्रिक विश्लेषण</h1>
+            <p class="text-xl font-medium text-gray-600 dark:text-gray-400">65 प्रश्नों पर आधारित आपकी संपूर्ण प्रोफ़ाइल</p>
+        </header>
+
+        <div id="ageInputScreen" class="card p-8 rounded-xl transition-all duration-500 transform scale-100 max-w-lg mx-auto no-print">
+            <h2 class="text-2xl font-bold mb-6 text-center">शुरुआत करें (Get Started)</h2>
+            <p class="mb-4 text-center text-gray-700 dark:text-gray-300">कृपया अपनी आयु (Age) दर्ज करें।</p>
+            <div class="flex flex-col items-center">
+                <input type="number" id="userAge" placeholder="उदाहरण: 25" min="10" max="99" class="w-full sm:w-64 p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white mb-6 text-center text-xl shadow-inner">
+                <button id="startQuizBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-10 rounded-full transition duration-300 transform hover:scale-105 shadow-xl">
+                    क्विज शुरू करें (Start Quiz)
+                </button>
+            </div>
+            
+            <div id="leaderboardSection" class="mt-10 p-6 rounded-lg hidden">
+                <h3 class="text-2xl font-bold text-center mb-4 text-indigo-600 dark:text-indigo-400">🏆 टॉप 5 स्कोर 🏆</h3>
+                <div id="leaderboardList" class="space-y-3">
+                    <p class="text-center text-gray-500">अभी कोई स्कोर नहीं है। टेस्ट दें और पहले बनें!</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="quizScreen" class="hidden card p-4 sm:p-8 rounded-xl transition-all duration-500 transform scale-0 max-w-4xl mx-auto no-print">
+            
+            <div class="progress-bar-container mb-6">
+                <div id="progressBar" class="progress-bar">0%</div>
+            </div>
+            
+            <h2 class="text-3xl font-bold mb-6 text-center text-indigo-600 dark:text-indigo-400">65 व्यक्तित्व सवाल</h2>
+            <p class="mb-6 text-center text-gray-600 dark:text-gray-400">हर सवाल पर 1 (पूरी तरह असहमत) से 5 (पूरी तरह सहमत) तक रेटिंग दें।</p>
+
+            <form id="quizForm" class="space-y-8"></form>
+
+            <div class="text-center mt-10">
+                <button type="submit" id="submitQuizBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-10 rounded-full transition duration-300 transform hover:scale-105 shadow-xl">
+                    परिणाम देखें (View Results)
+                </button>
+                <div id="error-message" class="text-red-500 mt-4 text-lg font-medium hidden">⚠️ कृपया सुनिश्चित करें कि आपने सभी 65 प्रश्नों का उत्तर दे दिया है।</div>
+            </div>
+        </div>
+
+        <div id="loadingScreen" class="hidden card p-12 rounded-xl max-w-md mx-auto text-center no-print">
+            <div class="loader w-16 h-16 border-8 border-t-8 border-gray-200 dark:border-gray-700 rounded-full mx-auto"></div>
+            <h2 class="text-2xl font-bold mt-6 text-gray-800 dark:text-gray-200">विश्लेषण हो रहा है...</h2>
+            <p class="text-lg text-gray-600 dark:text-gray-400 mt-2">आपकी प्रोफ़ाइल बनाई जा रही है।</p>
+        </div>
+
+
+        <div id="resultsScreen" class="hidden transition-all duration-500 transform scale-0">
+            <h2 class="text-4xl font-extrabold mb-8 text-center text-green-600 dark:text-green-400">आपका साइकोमेट्रिक विश्लेषण</h2>
+            
+            <div class="card p-8 rounded-xl mb-10 bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-900 dark:to-black shadow-2xl">
+                <p class="text-2xl font-bold text-center text-yellow-400">आपका अनुमानित IQ स्कोर (समय आधारित)</p>
+                <p id="iqValueText" class="text-8xl font-black text-center text-white my-4">120</p>
+                <p id="iqRatingDisplay" class="text-3xl font-bold text-center text-yellow-400"></p>
+                <p id="timeTakenDisplay" class="text-xl font-medium text-center text-gray-300 mt-4"></p> </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-12">
+                <div class="card p-5 bg-indigo-50 dark:bg-indigo-900/50 rounded-xl text-center shadow-md border-t-4 border-indigo-500">
+                    <p class="text-sm font-medium text-indigo-600 dark:text-indigo-300">IQ स्तर</p>
+                    <p id="iqLevelText" class="text-3xl font-bold mt-1 text-indigo-800 dark:text-indigo-200">...</p>
+                </div>
+                <div class="card p-5 bg-purple-50 dark:bg-purple-900/50 rounded-xl text-center shadow-md border-t-4 border-purple-500">
+                    <p class="text-sm font-medium text-purple-600 dark:text-purple-300">आपका ऑरा रंग</p>
+                    <p id="auraColorText" class="text-3xl font-bold mt-1 text-purple-800 dark:text-purple-200">...</p>
+                </div>
+                <div class="card p-5 bg-amber-50 dark:bg-amber-900/50 rounded-xl text-center shadow-md border-t-4 border-amber-500">
+                    <p class="text-sm font-medium text-amber-600 dark:text-amber-300">जीवन की प्राथमिकता</p>
+                    <p id="priorityText" class="text-xl font-bold mt-1 text-amber-800 dark:text-amber-200">...</p>
+                </div>
+            </div>
+
+            <h3 class="text-3xl font-bold border-b pb-3 mb-8 text-gray-800 dark:text-gray-200 text-center">उन्नत पैरामीटर्स (16 लक्षण)</h3>
+            <div class="card w-full p-4 sm:p-8">
+                <canvas id="barChartParameters"></canvas>
+            </div>
+
+            <h3 class="text-3xl font-bold border-b pb-3 mt-12 mb-8 text-gray-800 dark:text-gray-200 text-center">विस्तृत विश्लेषण (Detailed Analysis)</h3>
+            <div class="space-y-6">
+                <div class="card p-6 bg-yellow-50 dark:bg-yellow-900/50 border-l-4 border-yellow-500 shadow-sm">
+                    <p class="font-bold text-xl text-yellow-600 dark:text-yellow-400">1. ऑरा रंग का विस्तृत अर्थ / Detailed Aura Meaning</p>
+                    <div id="auraMeaningText" class="mt-3 text-gray-700 dark:text-gray-300 space-y-2"></div>
+                </div>
+                <div class="card p-6 bg-gray-50 dark:bg-gray-700/50 border-l-4 border-blue-500 shadow-sm">
+                    <p class="font-bold text-xl text-blue-600 dark:text-blue-400">2. स्वभाव / Swabhav (Nature)</p>
+                    <p id="natureText" class="mt-2 text-gray-700 dark:text-gray-300"></p>
+                </div>
+                <div class="card p-6 bg-gray-50 dark:bg-gray-700/50 border-l-4 border-purple-500 shadow-sm">
+                    <p class="font-bold text-xl text-purple-600 dark:text-purple-400">3. अनुकूलता / Compatibility & Relationship Insight</p>
+                    <p id="compatibilityText" class="mt-2 text-gray-700 dark:text-gray-300"></p>
+                </div>
+                <div class="card p-6 bg-gray-50 dark:bg-gray-700/50 border-l-4 border-red-500 shadow-sm">
+                    <p class="font-bold text-xl text-red-600 dark:text-red-400">4. नेतृत्व शैली / Leadership & Control Style</p>
+                    <p id="controlInsightText" class="mt-2 text-gray-700 dark:text-gray-300"></p>
+                </div>
+            </div>
+
+            <div class="card p-8 rounded-xl mt-12 text-center no-print">
+                <h3 class="text-3xl font-bold mb-6 text-gray-800 dark:text-gray-200">अपना सर्टिफिकेट प्राप्त करें</h3>
+                <p class="mb-4 text-gray-600 dark:text-gray-400">सर्टिफिकेट पर अपना नाम दर्ज करें और PNG के रूप में डाउनलोड करें।<br>आपका स्कोर लीडरबोर्ड पर भी सहेजा जाएगा।</p>
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <input type="text" id="certificateNameInput" placeholder="आपका पूरा नाम" class="w-full sm:w-80 p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-center text-lg shadow-inner">
+                    <button id="generateCertificateBtn" class="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-3 px-8 rounded-full transition duration-300 transform hover:scale-105 shadow-xl w-full sm:w-auto">
+                        सर्टिफिकेट जनरेट करें
+                    </button>
+                </div>
+                <p id="certificateError" class="text-red-500 mt-3 hidden">कृपया अपना नाम दर्ज करें।</p>
+            </div>
+            
+            <div class="mt-12 text-center space-y-4 sm:space-y-0 sm:space-x-4 no-print">
+                 <button id="shareBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-10 rounded-full transition duration-300 transform hover:scale-105 shadow-lg">
+                    परिणाम शेयर करें (Share)
+                </button>
+                 <button id="savePdfBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-10 rounded-full transition duration-300 transform hover:scale-105 shadow-lg">
+                    PDF सहेजें (Save as PDF)
+                </button>
+                 <button onclick="window.location.reload();" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-10 rounded-full transition duration-300 transform hover:scale-105 shadow-lg">
+                    पुनः प्रयास करें (Retake Test)
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="certificateTemplate">
+        <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 20px;">
+            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzRmNDZlNSIgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIj48cGF0aCBkPSJNOS43NSA5Ljc1Yy43NS0uNzUgMS45Ny0uNzUgMi43NSAwbDQuNSA0LjVjLjc1Ljc1Ljc1IDEuOTcgMCAyLjc1cy0xLjk3Ljc1LTIuNzUgMGwtMS43NS0xLjc1di43NWMwIDEuMjQtLjc4IDIuMy0xLjg3IDIuNzNhLjc1Ljc1IDAgMCAxLS44OC0uODdsLjE3LTIuOTljLjAzLS41LS4xNy0uOTctLjU1LTEuMjlsLTIuNS0yLjVMOS43NSA5Ljc1Wk0xMiAxLjVBMS41IDEuNSAwIDAgMCAxMC41IDN2LjVjMCAuNDEuMzQuNzUuNzUuNzVoMS41YS43NS43NSAwIDAgMCAuNzUtLjc1VjNhMS41IDEuNSAwIDAgMC0xLjUtMS41Wk0xMiA2QTQgNCAwIDEgMCAxMiAxNGE0IDQgMCAwIDAgMC04Wm0wIDYuNWExLjUgMS41IDAgMSAxIDAtMyAxLjUgMS41IDAgMCAxIDAgM1ptNi43NS01LjI1YS43NS43NSAwIDAgMCAwIDEuNWgxLjVhLjc1Ljc5IDAgMCAwIDAtMS41aC0xLjVabS0xNSAwYS43NS43NSAwIDAgMCAwIDEuNWgxLjVhLjc1Ljc1IDAgMCAwIDAtMS41SDMuNzVabTE1IDQuNWEuNzUuNzUgMCAwIDAgMCAxLjVoMS41YS43NS43NSAwIDAgMCAwLTEuNWgtMS41Wm0tMTUgMGEuNzUuNzUgMCAwIDAgMCAxLjVoMS41YS43NS43NSAwIDAgMCAwLTEuNWgtMS41Wm0xNS4xOSAxLjc1YS43NS43NSAwIDAgMCAuMTkuNThsLjc1IDEuM2MuMzMuNTggLjA2IDEuMy0uNTIgMS42My0uNTguMzMtMS4zLjA2LTEuNjMtLjUybC0uNzUtMS4zYS43NS43NSAwIDAgMC0uMTktLjU4IDEuNSAxLjUgMCAwIDEtLjEyLS43NWMwLS4xMy4wMi0uMjUuMDUtLjM3YS43NS43NSAwIDAgMC43NSAxLjAyYzAgLjA0LS4wMS4wOC0uMDIuMTJhLjIzLjIzIDAgMCAwIC4wNC4yM2wuMDcuMTJabS0xMy4zOC0uNDZhLjc1Ljc1IDAgMCAwLjc1LTEuMDIuMDguMDggMCAwIDEtLjAyLS4xMmMtLjAxLS4wNS0uMDMtLjEtLjA0LS4yM2wtLjA3LS4xMmEuNzUuNzUgMCAwIDAtMS4xMy0uNDJsLS43NSAxLjNjLS4zMy41OC0uMDYgMS4zLjUyIDEuNjMuNTguMzMgMS4zLjA2IDEuNjMtLjUybC43NS0xLjNhLjc1Ljc1IDAgMCAwLS4wMi0uOTVabTEyLjE5IDYuNDdhLjc1Ljc1IDAgMCAwLTEuMDItLjc1bC0xLjMuNzVjLS41OC4zMy0xLjMuMDYtMS42My0uNTItLjMzLS41OC0uMDYtMS4zLjUyLTEuNjNsMS4zLS43NWEuNzUuNzUgMCAwIDAgLjUyLTEuMzMgMS41IDEuNSAwIDAgMS0uNzUtLjEyYy0uMTIgMC0uMjQuMDItLjM3LjA1YS43NS43NSAwIDAgMCAxLjAyLjc1bC4xMi4wMmMuMTEgMCAuMi0uMDMuMi0uMDRsLjEyLS4wN2ExLjQ5IDEuNDkgMCAwIDEgMi4wNiAxLjJ6bS0xNS4zOC0xLjExYS43NS43NSAwIDAgMCAuNTIgMS4zM2wxLjMuNzVjLjU4LjMzLjU4IDEuMDQgMCAxLjM3bC0xLjMuNzVjLS41OC4zMy0xLjMuMDYtMS42My0uNTJhLjc1Ljc1IDAgMCAwLS41Mi0xLjMzIDEuNSAxLjUgMCAwIDEgLjEyLS43NWMwIC4xMi0uMDIuMjUtLjA1LjM3YS43NS43NSAwIDAgMC0xLjAyLS43NWMtLjA0IDAtLjA4LjAxLS4xMi4wMmwtLjIyLjA0LS4xMi4wN2EuNzUuNzUgMCAwIDAgMS4wNCAxLjEzbC4wMi4wMVptNi4xOSA1YS43NS43NSAwIDAgMC0xLjA0IDEuMTNsLjAyLjAxbDEuMzIuNzZhLjc1Ljc1IDAgMCAwIDEuMDItLjc1bDEuMy0uNzVjLjU4LS4zMy41OC0xLjA0IDAtMS4zN2wtMS4zLS43NmEuNzUuNzUgMCAwIDAtMS4yNi4yOGwxLjI4LjczYzAgLjA1LS4wMS4wNi0uMDIuMDZzLS4wNC4wMy0uMDYuMDNsLS4wNC4wMi0uMDQuMDJILjA0bC0uMDIuMDJILjAzbC0uMDIuMDJILjAybC0uMDIuMDJoLS4wMmwtLjAyLjAyaC0uMDNsLS4wMi4wMmgtLjAybC0uMDIuMDJjLS4wMSAwLS4wMS4wMS0uMDIuMDFoLS4wMmwtLjAyLjAyaC0uMDJsLS4wMi4wMmgtLjAybC0uMDIuMDJoLS4wMmwtLjAyLjAyaC0uMDJjLS4wMSAwLS4wMi4wMS0uMDMuMDFoLS4wMmMtLjAxIDAtLjAyLjAxLS4wMy4wMWgtLjAybC0uMDMuMDFoLS4wMmMtLjAxIDAtLjAyLjAxLS4wMy4wMWgtLjAybC0uMDMuMDFoLS4wM2MtLjAxIDAtLjAyLjAxLS4wMy4wMWgtLjAzbC0uMDMuMDFoLS4wM2MtLjAxIDAtLjAyLjAxLS4wMy4wMWgtLjAzbC0uMDMuMDFoLS4wM2MtLjAxIDAtLjAyLjAxLS4wMy4wMWgtLjAzbC0uMDMuMDFoLS4wM2MtLjAxIDAtLjAyLjAxLS4wMy4wMWgtLjAzbC0uMDMuMDFoLS4wM2MtLjAxIDAtLjAzLjAxLS4wNC4wMWgtLjAzYy0uMDEgMC0uMDMuMDEtLjA0LjAxaC0uMDNjLS4wMSAwLS4wMy4wMS0uMDQuMDFoLS4wM2MtLjAxIDAtLjAzLjAxLS4wNC4wMWgtLjAzYy0uMDEgMC0uMDMuMDEtLjA0LjAxaC0uMDNjLS4wMSAwLS4wMy4wMS0uMDQuMDFoLS4wM2MtLjAxIDAtLjAzLjAxLS4wNC4wMWgtLjAzYy0uMDEgMC0uMDMuMDEtLjA0LjAxaC0uMDNzLS4wMy4wMS0uMDQuMDFoLS4wM2MtLjAyIDAtLjAzLjAxLS4wNS4wMWgtLjAzYy0uMDIgMC0uMDMuMDEtLjA1DigitalZMC0uMDQgMC0uMDYuMDEtLjA5LjAxaC0uMDRjLS4wMyAwLS4wNi4wMS0uMDkuMDFoLS4wNWMtLjAzIDAtLjA3LjAxLS4xLjAxaC0uMDVjLS4wMyAwLS4wNy4wMS0uMS4wMWgtLjA1Yy0uMDQgMC0uMDcuMDEtLjExLjAxaC0uMDVjLS4wNCAwLS4wOC4wMS0uMTIuMDFoLS4wNWMtLjA0IDAtLjA4LjAxLS4xMi4wMWgtLjA2Yy0uMDQgMC0uMDguMDEtLjEyLjAxaC0uMDJ6IiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtUnVsZT0iZXZlbm9kZCIvPjwvc3ZnPg==" alt="Seal">
+            <div style="text-align: center;">
+                <div style="font-size: 52px; font-weight: 800; color: #3730a3; letter-spacing: -1px;">
+                    Certificate of Psychometric Analysis
+                </div>
+                <div style="font-size: 24px; color: #4b5563; margin-top: 10px;">
+                    This certificate is proudly presented to
+                </div>
+            </div>
+            <div style="width: 80px; height: 80px; background: radial-gradient(circle, #fde047, #eab308); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #78350f; font-weight: 800; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 4px solid #facc15;">
+                IQ<br>SEAL
+            </div>
+        </div>
+        
+        <div id="cert-name" style="font-size: 60px; font-weight: 700; color: #1e293b; text-align: center; margin: 25px 0; border-bottom: 3px solid #d1d5db; padding-bottom: 10px; width: 80%;">
+            User Name Here
+        </div>
+        <div style="font-size: 20px; color: #4b5563; text-align: center;">
+            For successfully completing the v6 Comprehensive Psychometric Analysis
+        </div>
+        
+        <div style="margin-top: 40px; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+            <div style="background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 12px; padding: 25px; text-align: center;">
+                <div style="font-size: 18px; font-weight: 600; color: #6b7280; text-transform: uppercase;">Estimated IQ Score</div>
+                <div id="cert-iq-score" style="font-size: 64px; font-weight: 900; color: #4f46e5; margin-top: 5px;">120</div>
+                <div id="cert-iq-rating" style="font-size: 22px; font-weight: 600; color: #4f46e5;">(Above Average)</div>
+            </div>
+            <div style="background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 12px; padding: 25px; text-align: center;">
+                <div style="font-size: 18px; font-weight: 600; color: #6b7280; text-transform: uppercase;">Dominant Aura</div>
+                <div id="cert-aura" style="font-size: 64px; font-weight: 900; color: #7c3aed; margin-top: 5px;">Blue</div>
+                <div id="cert-aura-meaning" style="font-size: 22px; font-weight: 600; color: #7c3aed;">(ज्ञान)</div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 30px; background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 12px; padding: 25px; width: 100%; text-align: center;">
+            <div style="font-size: 18px; font-weight: 600; color: #6b7280; text-transform: uppercase;">Key Personality Trait</div>
+            <div id="cert-top-trait" style="font-size: 28px; font-weight: 700; color: #166534; margin-top: 10px;">
+                Logical, Calm, and Resilient
+            </div>
+        </div>
+        
+        <div style="margin-top: auto; padding-top: 20px; width: 100%; display: flex; justify-content: space-between; align-items: flex-end;">
+            <div style="text-align: center;">
+                <div id="cert-date" style="font-size: 16px; font-weight: 500; color: #4b5563; border-bottom: 2px solid #6b7280; padding-bottom: 4px;">
+                    Date Here
+                </div>
+                <div style="font-size: 14px; font-weight: 600; color: #6b7280; margin-top: 5px;">Date of Issue</div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-family: 'cursive', sans-serif; font-size: 28px; color: #1e293b; border-bottom: 2px solid #6b7280; padding-bottom: 4px;">
+                    Dr. A. Gemini
+                </div>
+                <div style="font-size: 14px; font-weight: 600; color: #6b7280; margin-top: 5px;">Chief Analyst, Psychometric Division</div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // --- v6: 65 Questions Data (45 original + 10 cognitive + 10 new personality) ---
+        const questions = [
+            // Trait Key: E=Extrovert, L=Logical, C=Calm, P=Practical, Ch=Chill, Ff=Future Focused, Ms=Material Success, Cp=Controlling Power, R=Relationship, A=Aura, Em=Empathy, Rs=Resilience
+            // NEW Keys: IQC=IQ/Cognitive, ADP=Adaptability, DSC=Discipline, AMB=Ambition, PAT=Patience, FCS=Focus, SA=Social Acuity, CUR=Curiosity, SWA=Self-Awareness, LDR=Leadership, OPT=Optimism
+            
+            // --- Original 1-15 ---
+            { id: 1, text: "पार्टियों और सामाजिक आयोजनों में शामिल होना मुझे ऊर्जा देता है।", weights: { E: 1, A_Y: 1 } },
+            { id: 2, text: "मुझे अकेले समय बिताना और अपने विचारों पर मंथन करना पसंद है।", weights: { E: -1, A_B: 1, SWA: 1 } },
+            { id: 3, text: "मैं अक्सर नए लोगों से बातचीत शुरू करता हूँ।", weights: { E: 1, R: 0.5, SA: 1 } },
+            { id: 4, text: "एक शांत शाम एक रोमांचक भीड़-भाड़ वाली रात से बेहतर है।", weights: { E: -1, C: 0.5, Rs: 0.5 } },
+            { id: 5, text: "जब मैं तनाव में होता हूँ, तो मैं लोगों के बीच रहना चाहता हूँ।", weights: { E: 1, R: -0.5 } },
+            { id: 6, text: "महत्वपूर्ण निर्णय लेते समय, मैं तर्क और डेटा का पालन करता हूँ।", weights: { L: 1, P: 0.5 } }, // IQC q
+            { id: 7, text: "मैं दूसरों की भावनाओं को बहुत जल्दी महसूस कर लेता हूँ।", weights: { L: -1, R: 1, A_G: 1, Em: 1, SA: 1 } },
+            { id: 8, text: "समस्याएँ तब सबसे अच्छी तरह हल होती हैं जब आप भावनाओं को एक तरफ रख देते हैं।", weights: { L: 1, C: 0.5, Em: -1 } }, // IQC q
+            { id: 9, text: "दूसरों की आलोचना से मैं आसानी से आहत हो जाता हूँ।", weights: { L: -1, R: -1, Rs: -1, SWA: -1 } },
+            { id: 10, text: "मैं अक्सर दूसरों की मदद करने के लिए अपनी ज़रूरतों को नज़रअंदाज़ कर देता हूँ।", weights: { L: -1, R: 1, A_G: 1, Em: 1 } },
+            { id: 11, text: "मैं अपनी भावनाओं को बहुत अच्छी तरह नियंत्रित करता हूँ।", weights: { C: 1, Cp: 0.5, Rs: 1, SWA: 1 } },
+            { id: 12, text: "मैं अचानक यात्रा या खरीदारी करने का निर्णय ले लेता हूँ।", weights: { C: -1, ADP: 1 } },
+            { id: 13, text: "गुस्सा आने पर, मैं अक्सर बाद में पछताने वाली बातें कह जाता हूँ।", weights: { C: -1, A_R: 1, Rs: -1 } },
+            { id: 14, text: "मैं कोई भी कार्रवाई करने से पहले हमेशा दो बार सोचता हूँ।", weights: { C: 1, L: 0.5, Ch: -1, PAT: 1 } },
+            { id: 15, text: "मैं शांत और तनावमुक्त रहने की कला जानता हूँ।", weights: { C: 1, Ch: 1, Rs: 1, PAT: 1 } },
+            
+            // --- NEW: Cognitive/IQ Questions (10) ---
+            { id: 16, text: "मुझे जटिल पहेलियाँ (puzzles) और दिमागी खेल सुलझाने में मज़ा आता है।", weights: { IQC: 2, L: 1, CUR: 1 } },
+            { id: 17, text: "मैं आसानी से डेटा या संख्याओं में पैटर्न ढूँढ लेता हूँ।", weights: { IQC: 2, L: 1 } },
+            { id: 18, text: "बहस करते समय, मैं भावनाओं के बजाय हमेशा तर्क और तथ्यों पर ध्यान देता हूँ।", weights: { IQC: 1, L: 1, Em: -1 } },
+            { id: 19, text: "मैं किसी भी चीज़ के काम करने के तरीके (mechanism) को समझने की कोशिश करता हूँ।", weights: { IQC: 1, P: 0.5, CUR: 1 } },
+            { id: 20, text: "मैं अपने मन में 3D आकृतियों को आसानी से घुमाकर (visualize) देख सकता हूँ।", weights: { IQC: 1, P: -1 } },
+            { id: 21, text: "मैं अक्सर चीज़ों की कल्पना करता हूँ कि वे कैसी 'हो सकती हैं' न कि वे कैसी 'हैं'।", weights: { P: -1, A_B: 1, IQC: -1 } }, // Re-purposed
+            { id: 22, text: "मैं लंबी, जटिल जानकारी (complex information) को पढ़ने और समझने में अच्छा हूँ।", weights: { IQC: 2, L: 1, FCS: 1 } },
+            { id: 23, text: "मैं नई अवधारणाओं (new concepts) को दूसरों की तुलना में बहुत तेज़ी से सीखता हूँ।", weights: { IQC: 2, ADP: 1 } },
+            { id: 24, text: "मैं हमेशा सबसे खराब स्थिति की योजना बनाता हूँ।", weights: { Ch: -1, P: 0.5, IQC: 1 } }, // Re-purposed
+            { id: 25, text: "किसी भी निर्णय को लेने से पहले मैं सभी विकल्पों का विश्लेषण करता हूँ।", weights: { Ch: -1, L: 1, IQC: 1 } }, // Re-purposed
+            
+            // --- Original 20-30 ---
+            { id: 26, text: "मैं भविष्य में जोखिम लेने के बजाय सुरक्षित मार्ग चुनना पसंद करता हूँ।", weights: { P: 1, Ch: 0.5, C: 0.5, Rs: 0.5 } },
+            { id: 27, text: "मैं अक्सर रात को छोटी-छोटी बातों को लेकर जागता रहता हूँ।", weights: { Ch: -1, L: 0.5, Rs: -1, FCS: -1 } },
+            { id: 28, text: "मैं 'जो होता है, अच्छे के लिए होता है' वाली मानसिकता में विश्वास करता हूँ।", weights: { Ch: 1, Ms: -1, Rs: 1, OPT: 1 } },
+            { id: 29, text: "मैं आसानी से जाने देता हूँ और गलतियों को दिल पर नहीं लेता।", weights: { Ch: 1, C: 0.5, Rs: 1, OPT: 1 } },
+            { id: 30, text: "मैं अक्सर पुराने दिनों को याद करता हूँ और उनमें खो जाता हूँ।", weights: { Ff: -1 } },
+            { id: 31, text: "मेरा ध्यान भविष्य के लक्ष्यों और नई योजनाओं पर केंद्रित रहता है।", weights: { Ff: 1, Ms: 0.5, Rs: 0.5, AMB: 1 } },
+            { id: 32, text: "बीती हुई बातों पर पछतावा करना मेरे लिए स्वाभाविक है।", weights: { Ff: -1, Ch: -0.5, Rs: -1, OPT: -1 } },
+            { id: 33, text: "मैं हमेशा यह देखने के लिए उत्साहित रहता हूँ कि आगे क्या होगा।", weights: { Ff: 1, E: 0.5, CUR: 1, OPT: 1 } },
+            { id: 34, text: "मैं वर्तमान क्षण में पूरी तरह से रहता हूँ, न अतीत, न भविष्य की चिंता करता हूँ।", weights: { Ff: 0, C: 1, Ch: 1, Rs: 1 } },
+            { id: 35, text: "कल्पना के बजाय, मैं तथ्यों और डेटा पर भरोसा करता हूँ।", weights: { P: 1, L: 0.5, IQC: 1 } }, // Re-purposed
+            
+            // --- NEW: Personality Questions (10) ---
+            { id: 36, text: "मैं अपने दीर्घकालिक लक्ष्यों (long-term goals) को प्राप्त करने के लिए एक सख्त दिनचर्या (strict routine) का पालन करता हूँ।", weights: { DSC: 2, AMB: 1, FCS: 1 } },
+            { id: 37, text: "जब योजनाएँ अचानक बदल जाती हैं, तो मैं आसानी से नई स्थिति के अनुसार ढल जाता हूँ।", weights: { ADP: 2, C: 1, Ch: 1 } },
+            { id: 38, text: "ट्रैफिक जाम या लंबी लाइनों में मैं आसानी से धैर्य खो देता हूँ।", weights: { PAT: -2, C: -1 } },
+            { id: 39, text: "मैं एक कमरे में प्रवेश करते ही वहाँ के सामाजिक माहौल (social dynamics) को तुरंत समझ जाता हूँ।", weights: { SA: 2, Em: 1, SWA: 1 } },
+            { id: 40, text: "मैं हमेशा नई चीजें सीखने या नए कौशल (skills) हासिल करने के अवसरों की तलाश में रहता हूँ।", weights: { CUR: 2, Ff: 1 } },
+            { id: 41, text: "मैं अपनी भावनाओं, शक्तियों और कमजोरियों को गहराई से समझता हूँ।", weights: { SWA: 2, Em: 0.5, L: 0.5 } },
+            { id: 42, text: "लोग अक्सर मुझे अपनी टीमों का नेतृत्व करने के लिए कहते हैं, भले ही मैं पूछूँ नहीं।", weights: { LDR: 2, Cp: 1, E: 0.5 } },
+            { id: 43, text: "असफलताओं के बावजूद, मुझे विश्वास है कि अंत में चीजें मेरे लिए अच्छी होंगी।", weights: { OPT: 2, Rs: 1, Ch: 0.5 } },
+            { id: 44, text: "मैं अपने लक्ष्यों को प्राप्त करने के लिए अत्यधिक प्रेरित (driven) और महत्वाकांक्षी हूँ।", weights: { AMB: 2, Ff: 1, Ms: 1, DSC: 1 } },
+            { id: 45, text: "मैं बिना भटके (distracted) हुए घंटों तक एक ही काम पर ध्यान केंद्रित कर सकता हूँ।", weights: { FCS: 2, DSC: 1, Ch: -1 } },
+
+            // --- Original 31-45 (remapped to 46-60) ---
+            { id: 46, text: "करियर में पदोन्नति (promotion) और पैसा मेरे लिए सबसे बड़ी प्रेरणा है।", weights: { Ms: 1, Cp: 0.5, A_R: 1, AMB: 1 } },
+            { id: 47, text: "मैं संतुष्टि और शांति को धन से अधिक महत्व देता हूँ।", weights: { Ms: -1, C: 0.5, A_G: 1, Em: 0.5, SWA: 1 } },
+            { id: 48, text: "दूसरों को प्रभावित करने के लिए मैं महंगी चीज़ें खरीदना पसंद करता हूँ।", weights: { Ms: 1, E: 0.5 } },
+            { id: 49, text: "मैं खुशी को मापने के लिए अपने रिश्तों की गहराई का उपयोग करता हूँ।", weights: { Ms: -1, R: 1, Em: 1 } },
+            { id: 50, text: "एक सरल जीवन जिसमें तनाव कम हो, वह बहुत अधिक आय वाले जटिल जीवन से बेहतर है।", weights: { Ms: -1, Ch: 1, C: 0.5, Rs: 0.5 } },
+            { id: 51, text: "मैं किसी भी समूह में नेतृत्व करना पसंद करता हूँ और निर्णय लेना मेरा काम है।", weights: { Cp: 1, E: 0.5, A_R: 1, LDR: 1 } },
+            { id: 52, text: "जब काम मेरे तरीके से नहीं होता है तो मैं निराश हो जाता हूँ।", weights: { Cp: 1, C: -0.5, Rs: -1, ADP: -1 } },
+            { id: 53, text: "मैं दूसरों को सौंपने के बजाय काम खुद करना पसंद करता हूँ।", weights: { Cp: 1, P: 0.5, DSC: 1 } },
+            { id: 54, text: "जब मैं किसी स्थिति को नियंत्रित नहीं कर पाता तो मैं बेचैन महसूस करता हूँ।", weights: { Cp: 1, Ch: -0.5, ADP: -1 } },
+            { id: 55, text: "मैं मानता हूँ कि हर चीज़ पर मेरा पूर्ण नियंत्रण होना संभव नहीं है।", weights: { Cp: -1, Ch: 0.5, Rs: 1, ADP: 1 } },
+            { id: 56, text: "मैं अपनी भावनाओं को व्यक्त करने में स्पष्ट और ईमानदार हूँ, भले ही इससे असहजता हो।", weights: { R: 1, L: -0.5, Em: 0.5, SWA: 1 } },
+            { id: 57, text: "संघर्ष (conflict) होने पर, मैं शांत रहने और समझौते का रास्ता खोजने की कोशिश करता हूँ।", weights: { R: 1, C: 0.5, Em: 0.5, Rs: 0.5, SA: 1, PAT: 1 } },
+            { id: 58, text: "मैं दूसरों की आलोचना को रचनात्मक प्रतिक्रिया (feedback) के रूप में लेता हूँ।", weights: { R: 1, L: 0.5, Rs: 1, SWA: 1 } }, // Removed IQ, added SWA
+            { id: 59, text: "मैं अक्सर यह चिंता करता हूँ कि दूसरे मेरे बारे में क्या सोचते हैं।", weights: { R: -1, Ch: -0.5, Em: 1, SWA: -1 } },
+            { id: 60, text: "मेरे पास अलग-अलग तरह के दोस्त हैं, और मैं हर किसी के साथ अच्छी तरह घुलमिल जाता हूँ।", weights: { R: 1, E: 0.5, A_Y: 1, Em: 0.5, SA: 1 } },
+            
+            // --- NEW: Final 5 Questions (for balance) ---
+            { id: 61, text: "मैं समस्याओं के लिए व्यावहारिक (practical) समाधान खोजने में उत्कृष्ट हूँ।", weights: { P: 1, Cp: 0.5, IQC: 1 } }, // Re-purposed
+            { id: 62, text: "मैं अक्सर दूसरों को प्रेरित (inspire) करता हूँ और उन्हें उनका सर्वश्रेष्ठ करने के लिए प्रोत्साहित करता हूँ।", weights: { LDR: 2, E: 1, OPT: 1, SA: 1 } },
+            { id: 63, text: "जब मैं कोई गलती करता हूँ, तो मैं तुरंत उसे स्वीकार करता हूँ और उसे ठीक करने की कोशिश करता हूँ।", weights: { SWA: 1, Rs: 1, L: 0.5 } },
+            { id: 64, text: "मैं भविष्य के बारे में आशावादी (optimistic) हूँ, भले ही चीजें अभी मुश्किल हों।", weights: { OPT: 2, Rs: 1, Ff: 0.5 } },
+            { id: 65, text: "मैं मानता हूँ कि अनुशासन (discipline) प्रतिभा (talent) से ज़्यादा महत्वपूर्ण है।", weights: { DSC: 2, AMB: 1, L: 0.5 } }
+        ];
+        
+        // --- v6: Core Trait Keys (26 total) ---
+        const TRAITS = [
+            'E', 'L', 'C', 'P', 'Ch', 'Ff', 'Ms', 'Cp', 'R', 'A_R', 'A_Y', 'A_G', 'A_B', 'Em', 'Rs', // Original 15
+            'IQC', // Cognitive/IQ
+            'ADP', 'DSC', 'AMB', 'PAT', 'FCS', 'SA', 'CUR', 'SWA', 'LDR', 'OPT' // New 10
+        ];
+        
+        // --- Global Variables ---
+        let userAge = 25; // Default age
+        let chartObjects = {}; // To store chart instances for destruction
+        let lastResults = {}; // To store results for sharing
+        
+        // --- NEW: Timer and Leaderboard ---
+        let timerInterval;
+        let timeTakenInSeconds = 0;
+        const totalQuizTime = 900; // 15 मिनट (900 सेकंड)
+        const LEADERBOARD_KEY = 'psychometricQuizLeaderboard_v6';
+
+        // --- Utility Functions ---
+
+        // Function to toggle Dark/Light Mode
+        function toggleTheme() {
+            const html = document.documentElement;
+            html.classList.toggle('dark');
+            html.classList.toggle('light');
+            localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+            updateChartColors();
+        }
+
+        // Function to switch between the main views
+        function switchView(targetView) {
+            const screens = {
+                'ageInput': document.getElementById('ageInputScreen'),
+                'quiz': document.getElementById('quizScreen'),
+                'loading': document.getElementById('loadingScreen'),
+                'results': document.getElementById('resultsScreen')
+            };
+
+            for (const view in screens) {
+                if (view === targetView) {
+                    screens[view].classList.remove('hidden', 'scale-0');
+                    screens[view].classList.add('scale-100');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    screens[view].classList.add('hidden', 'scale-0');
+                    screens[view].classList.remove('scale-100');
+                }
+            }
+        }
+
+        // Function to generate the quiz form HTML
+        function generateQuizForm() {
+            const form = document.getElementById('quizForm');
+            let html = '';
+            const total = questions.length;
+
+            questions.forEach(q => {
+                html += `
+                    <div class="p-5 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/50 transition duration-300 hover:shadow-lg">
+                        <p class="font-semibold mb-4 text-lg text-gray-800 dark:text-gray-200">प्रश्न ${q.id}/${total}: ${q.text}</p>
+                        <div class="flex flex-wrap justify-between gap-2 sm:gap-3">
+                            <input type="radio" id="q${q.id}-1" name="q${q.id}" value="1" class="hidden" required>
+                            <label for="q${q.id}-1" class="rating-label">1 - पूरी तरह असहमत</label>
+                            <input type="radio" id="q${q.id}-2" name="q${q.id}" value="2" class="hidden">
+                            <label for="q${q.id}-2" class="rating-label">2 - असहमत</label>
+                            <input type="radio" id="q${q.id}-3" name="q${q.id}" value="3" class="hidden">
+                            <label for="q${q.id}-3" class="rating-label">3 - तटस्थ</label>
+                            <input type="radio" id="q${q.id}-4" name="q${q.id}" value="4" class="hidden">
+                            <label for="q${q.id}-4" class="rating-label">4 - सहमत</label>
+                            <input type="radio" id="q${q.id}-5" name="q${q.id}" value="5" class="hidden">
+                            <label for="q${q.id}-5" class="rating-label">5 - पूरी तरह सहमत</label>
+                        </div>
+                    </div>
+                `;
+            });
+            form.innerHTML = html;
+        }
+
+        // --- NEW: Timer Functions ---
+        function startTimer() {
+            document.getElementById('timer').classList.remove('hidden');
+            let timeLeft = totalQuizTime;
+            timeTakenInSeconds = 0;
+            
+            const timerEl = document.getElementById('timer');
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timeTakenInSeconds = totalQuizTime - timeLeft;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerEl.textContent = '0:00';
+                    // Auto-submit when time is up
+                    document.getElementById('submitQuizBtn').click(); 
+                }
+                
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerEl.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                
+            }, 1000);
+        }
+
+        // --- NEW: Leaderboard Functions ---
+        function displayLeaderboard() {
+            const leaderboardListEl = document.getElementById('leaderboardList');
+            const leaderboardData = JSON.parse(localStorage.getItem(LEADERBOARD_KEY) || '[]');
+            
+            if (leaderboardData.length === 0) {
+                leaderboardListEl.innerHTML = '<p class="text-center text-gray-500">अभी कोई स्कोर नहीं है। टेस्ट दें और पहले बनें!</p>';
+                return;
+            }
+            
+            leaderboardListEl.innerHTML = ''; // Clear list
+            
+            leaderboardData.forEach((entry, index) => {
+                const auraColorDot = entry.aura === 'Red' ? 'bg-red-500' :
+                                     entry.aura === 'Yellow' ? 'bg-yellow-500' :
+                                     entry.aura === 'Green' ? 'bg-green-500' : 'bg-blue-500';
+                                     
+                const el = document.createElement('div');
+                el.className = 'flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-700 rounded-lg shadow-sm';
+                el.innerHTML = `
+                    <div class="flex items-center">
+                        <span class="text-xl font-bold w-6 text-indigo-600 dark:text-indigo-400">${index + 1}.</span>
+                        <span class="w-4 h-4 rounded-full ${auraColorDot} mx-2 shadow-inner"></span>
+                        <span class="font-semibold text-gray-800 dark:text-gray-200">${entry.name}</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="font-bold text-lg text-indigo-600 dark:text-indigo-400">IQ: ${entry.iq}</span>
+                        <span class="block text-xs text-gray-500 dark:text-gray-400">${entry.date}</span>
+                    </div>
+                `;
+                leaderboardListEl.appendChild(el);
+            });
+        }
+
+        function addToLeaderboard(name, iq, auraMain) {
+            if (!name || !iq || !auraMain) return;
+            
+            const leaderboardData = JSON.parse(localStorage.getItem(LEADERBOARD_KEY) || '[]');
+            
+            const newEntry = {
+                name: name,
+                iq: iq,
+                aura: auraMain,
+                date: new Date().toLocaleDateString('en-IN') // Indian date format
+            };
+            
+            leaderboardData.push(newEntry);
+            
+            // Ranking System: Sort by IQ (descending)
+            leaderboardData.sort((a, b) => b.iq - a.iq);
+            
+            // Keep only Top 5
+            const top5 = leaderboardData.slice(0, 5);
+            
+            localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(top5));
+            
+            // Re-display the leaderboard on the home screen
+            displayLeaderboard();
+        }
+
+
+        // --- v6: Core Calculation Logic (Heavily Updated) ---
+        function calculateResults(timeTakenSeconds) {
+            const form = document.getElementById('quizForm');
+            const answers = new FormData(form);
+            const rawScores = {};
+
+            // Initialize raw scores
+            TRAITS.forEach(t => rawScores[t] = 0);
+            
+            // 1. Calculate Raw Scores
+            for (let i = 1; i <= questions.length; i++) {
+                const answer = answers.get(`q${i}`);
+                if (!answer) {
+                    console.error(`Question ${i} is unanswered.`);
+                    return null; 
+                }
+
+                const value = parseInt(answer);
+                const q = questions.find(q => q.id === i);
+
+                // Apply weights
+                for (const trait in q.weights) {
+                    let processedValue = (value - 3); // 3 is neutral (0 score)
+                    if (trait === 'IQC') {
+                        processedValue = value - 1; // 1 -> 0, 5 -> 4
+                    }
+                    rawScores[trait] += processedValue * q.weights[trait];
+                }
+            }
+
+            // 2. Normalize and Calculate Percentage Pairs (0-100%)
+            const params = {};
+            
+            const getMinMax = (traitKey) => {
+                let minPossible = 0;
+                let maxPossible = 0;
+                questions.forEach(q => {
+                    const weight = q.weights[traitKey] || 0;
+                    if (traitKey === 'IQC') {
+                        if (weight > 0) maxPossible += weight * 4; // Max score 4
+                        // minPossible is 0
+                    } else {
+                        if (weight > 0) {
+                            maxPossible += weight * 2; // Max push (rating 5 -> value 2)
+                            minPossible += weight * -2; // Min push (rating 1 -> value -2)
+                        } else if (weight < 0) {
+                            maxPossible += weight * -2; // Max push (rating 1 -> value -2)
+                            minPossible += weight * 2; // Min push (rating 5 -> value 2)
+                        }
+                    }
+                });
+                return { min: minPossible, max: maxPossible };
+            };
+            
+            const normalize = (score, min, max) => {
+                if (max === min) return 50;
+                const pct = ((score - min) / (max - min)) * 100;
+                return Math.max(0, Math.min(100, Math.round(pct)));
+            };
+            
+            // Calculate percentages for all 16 advanced params
+            TRAITS.forEach(trait => {
+                if (trait !== 'IQC') { // IQC is handled separately
+                    const minMax = getMinMax(trait);
+                    params[trait] = normalize(rawScores[trait], minMax.min, minMax.max);
+                }
+            });
+
+            // Calculate inverse traits for analysis
+            params.Introvert = 100 - params.E;
+            params.Emotional = 100 - params.L;
+            params.Impulsive = 100 - params.C;
+            params.Dreamer = 100 - params.P;
+            params.Overthinker = 100 - params.Ch;
+            params.Past = 100 - params.Ff;
+            params.InnerPeace = 100 - params.Ms;
+            
+            // 3. v6: Advanced IQ Calculation (with Time)
+            const iqMinMax = getMinMax('IQC');
+            const iqPct = normalize(rawScores.IQC, iqMinMax.min, iqMinMax.max); // 0-100%
+            const baseIQ = 70 + (iqPct / 100) * 75; // Base IQ (70-145) based on answers
+            
+            let timeBonus = 0;
+            const timeFactor = 1 - (timeTakenSeconds / totalQuizTime); // 1 (fast) to 0 (slow)
+            
+            // High score + Fast = Bonus
+            if (iqPct > 60 && timeFactor > 0.5) {
+                timeBonus = (iqPct / 100) * (timeFactor * 15); // Max ~15 points bonus
+            }
+            // Low score + Very Fast = Penalty (Guessing)
+            else if (iqPct < 40 && timeFactor > 0.8) {
+                timeBonus = -10; // 10 points penalty
+            }
+            // High score + Slow = Small Bonus (Thoughtful)
+            else if (iqPct > 70 && timeFactor < 0.3) {
+                timeBonus = 5;
+            }
+            
+            let agePenalty = 0;
+            if (userAge > 30) {
+                agePenalty = Math.floor((userAge - 30) / 5); // 1 point penalty every 5 years over 30
+            }
+            
+            let calculatedIQ = Math.round(baseIQ + timeBonus - agePenalty);
+            calculatedIQ = Math.max(75, Math.min(160, calculatedIQ)); // Clamp IQ
+            
+            let iqRating, iqLevelText;
+            if (calculatedIQ >= 145) { iqRating = 'असाधारण (Genius)'; iqLevelText = 'असाधारण'; }
+            else if (calculatedIQ >= 130) { iqRating = 'अति-औसत (Very High)'; iqLevelText = 'बहुत उच्च'; }
+            else if (calculatedIQ >= 115) { iqRating = 'औसत से ऊपर (Above Average)'; iqLevelText = 'उच्च'; }
+            else if (calculatedIQ >= 90) { iqRating = 'औसत (Average)'; iqLevelText = 'औसत'; }
+            else if (calculatedIQ >= 80) { iqRating = 'औसत से नीचे (Below Average)'; iqLevelText = 'औसत से कम'; }
+            else { iqRating = 'कम (Low)'; iqLevelText = 'निम्न'; }
+            
+            // 4. Aura Calculation
+            const auras = { Red: params.A_R, Yellow: params.A_Y, Green: params.A_G, Blue: params.A_B };
+            let maxAura = 'Blue';
+            let maxScore = -Infinity;
+            for(const [key, value] of Object.entries(auras)) {
+                if(value > maxScore) { maxScore = value; maxAura = key; }
+            }
+            let auraColor = `${maxAura} (${maxAura === 'Red' ? 'शक्ति' : maxAura === 'Yellow' ? 'खुशी' : maxAura === 'Green' ? 'संतुलन' : 'ज्ञान'})`;
+            
+            // 5. v6: Detailed Text Generation
+            let natureText = '';
+            if (params.E > 65 && params.C > 60) natureText = 'आपका स्वभाव संतुलित और ऊर्जावान (Energetic) है। आप सामाजिक होने के साथ-साथ शांत भी रह सकते हैं।';
+            else if (params.Introvert > 65 && params.FCS > 60) natureText = 'आपका स्वभाव चिंतनशील और गहन (Deep & Focused) है। आप दुनिया को गहराई से समझते हैं और काम पर ध्यान केंद्रित कर सकते हैं।';
+            else if (params.Impulsive > 60 && params.Emotional > 60) natureText = 'आपका स्वभाव भावुक और आवेगी (Passionate) है। आप अपने दिल से जीते हैं और भावनाओं के प्रति बहुत संवेदनशील (Sensitive) हैं।';
+            else if (params.L > 65 && params.P > 65 && params.DSC > 60) natureText = 'आपका स्वभाव दृढ़, अनुशासित और केंद्रित (Disciplined & Focused) है। आप लक्ष्यों की ओर तार्किक रूप से और बिना विचलित हुए आगे बढ़ते हैं।';
+            else if (params.ADP > 70 && params.OPT > 70) natureText = 'आपका स्वभाव अत्यधिक अनुकूलनीय (Adaptable) और आशावादी (Optimistic) है। आप बदलाव को स्वीकार करते हैं और हमेशा उजला पक्ष देखते हैं।';
+            else natureText = 'आपका स्वभाव एक मिश्रित थैली है, जो स्थिति के आधार पर अनुकूल होता है। आप बहुमुखी (versatile) हैं।';
+
+            let compatibilityText = '';
+            if (params.Em > 65 && params.R > 60) compatibilityText = 'आप रिश्तों में अत्यधिक अनुकूल (Highly Compatible) और सहानुभूतिपूर्ण (Empathetic) हैं। आपकी सबसे बड़ी ताकत आपकी भावनात्मक रूप से जुड़ने और सुनने की क्षमता है।';
+            else if (params.L > 60 && params.C > 60 && params.PAT > 50) compatibilityText = 'आप रिश्तों में सम्मान और स्पष्टता (Clarity) को महत्व देते हैं। आप भावनात्मक ड्रामा के बजाय धैर्यपूर्वक समस्या-समाधान (Problem-Solving) पर ध्यान केंद्रित करते हैं।';
+            else if (params.LDR > 65 || params.Cp > 65) compatibilityText = 'आप रिश्तों में अधिक स्वतंत्रता (Independence) और नेतृत्व पसंद करते हैं। आपको ऐसे साथी चाहिए जो आपकी व्यक्तिगत महत्वाकांक्षाओं का सम्मान करें।';
+            else compatibilityText = 'आप एक संतुलित साथी हैं, जो ज़रूरत पड़ने पर देते हैं और ज़रूरत पड़ने पर लेते हैं। आप स्पष्ट संचार (clear communication) को महत्व देते हैं।';
+            
+            let controlInsightText = '';
+            if (params.LDR > 70) controlInsightText = 'आपकी नेतृत्व शैली प्रेरक (Inspirational) है। आप कंट्रोल करने के बजाय लोगों को प्रोत्साहित (motivate) करते हैं। आप एक स्वाभाविक नेता हैं जो दूसरों को सर्वश्रेष्ठ करने के लिए प्रेरित करते हैं।';
+            else if (params.Cp > 70) controlInsightText = 'आपकी नियंत्रण शक्ति (Controlling Power) उच्च है। आप कुशल और निर्णायक (decisive) हैं, लेकिन आपको दूसरों को ज़िम्मेदारी देने और उनकी राय का सम्मान करने की कला सीखनी होगी।';
+            else if (params.Cp > 40) controlInsightText = 'आपका नियंत्रण शक्ति स्तर मध्यम है। आप आवश्यकता पड़ने पर नेतृत्व करते हैं, लेकिन आप सहयोग (Collaboration) को भी महत्व देते हैं।';
+            else controlInsightText = 'आपकी नियंत्रण शक्ति कम है। आप प्रवाह के साथ चलना पसंद करते हैं और दूसरों पर नियंत्रण करने की आवश्यकता महसूस नहीं करते। आप एक बेहतरीन टीम प्लेयर हैं।';
+            
+            // v6: Expanded Aura Meanings
+            let auraMeaningText = '';
+            if(maxAura === 'Red') auraMeaningText = `
+                <p class="mb-2"><strong>लाल ऑरा (शक्ति, जुनून, नेतृत्व):</strong> आप एक शक्तिशाली और महत्वाकांक्षी व्यक्ति हैं। आप जोखिम लेने से नहीं डरते और स्वाभाविक नेता हैं।</p>
+                <p class="mb-2"><strong>शक्तियां:</strong> आपका जुनून आपको प्रेरित करता है। आप साहसी, ऊर्जावान और जमीन से जुड़े हुए हैं। आप चीजों को पूरा करते हैं।</p>
+                <p class="mb-2"><strong>चुनौतियाँ:</strong> कभी-कभी यह जुनून आपको आवेगी (impulsive) या अधीर (impatient) बना सकता है। अपनी विस्फोटक ऊर्जा को नियंत्रित करना सीखें।</p>
+                <p><strong>अनुकूलता:</strong> आप पीले (Yellow) ऑरा की रचनात्मकता और नीले (Blue) ऑरा की शांति के साथ संतुलन पाते हैं।</p>`;
+            if(maxAura === 'Yellow') auraMeaningText = `
+                <p class="mb-2"><strong>पीला ऑरा (खुशी, रचनात्मकता, आशावाद):</strong> आप एक उज्ज्वल और करिश्माई व्यक्ति हैं। आप सामाजिक हैं और लोगों को अपनी ओर आकर्षित करते हैं।</p>
+                <p class="mb-2"><strong>शक्तियां:</strong> आपकी ऊर्जा संक्रामक है। आप आशावादी, जिज्ञासु (curious) और नए विचारों को पसंद करने वाले हैं। आप महान संचारक (communicators) हैं।</p>
+                <p class="mb-2"><strong>चुनौतियाँ:</strong> आप आसानी से ऊब सकते हैं और एक चीज़ पर टिके रहने में कठिनाई महसूस कर सकते हैं। कभी-कभी आप अति-आलोचनात्मक (over-critical) हो सकते हैं।</p>
+                <p><strong>अनुकूलता:</strong> आप नीले (Blue) ऑरा के गहरे विचारकों और हरे (Green) ऑरा के पोषण करने वालों के साथ अच्छा संतुलन बनाते हैं।</p>`;
+            if(maxAura === 'Green') auraMeaningText = `
+                <p class="mb-2"><strong>हरा ऑरा (संतुलन, उपचार, करुणा):</strong> आप एक दयालु और पोषण करने वाले व्यक्ति हैं। आप सद्भाव (harmony) को महत्व देते हैं और एक प्राकृतिक शांतिदूत हैं।</p>
+                <p class="mb-2"><strong>शक्तियां:</strong> लोग आपकी उपस्थिति में सहज और सुरक्षित महसूस करते हैं। आप वफादार, धैर्यवान और सहानुभूतिपूर्ण (empathetic) हैं।</p>
+                <p class="mb-2"><strong>चुनौतियाँ:</strong> आप अक्सर दूसरों की ज़रूरतों को अपनी ज़रूरतों से पहले रखते हैं, जिससे आप खुद को उपेक्षित (neglected) महसूस कर सकते हैं। 'ना' कहना सीखें।</p>
+                <p><strong>अनुकूलता:</strong> आप नीले (Blue) और पीले (Yellow) ऑरा के साथ गहराई से जुड़ते हैं, जो आपकी पोषण प्रकृति की सराहना करते हैं।</p>`;
+            if(maxAura === 'Blue') auraMeaningText = `
+                <p class="mb-2"><strong>नीला ऑरा (ज्ञान, शांति, अंतर्ज्ञान):</strong> आप एक गहरे विचारक, शांत और विश्लेषणात्मक हैं। आप सच्चाई और ज्ञान को किसी भी चीज़ से ज़्यादा महत्व देते हैं।</p>
+                <p class="mb-2"><strong>शक्तियां:</strong> आपकी सबसे बड़ी ताकत आपकी तार्किक सोच और शांति है। आप ईमानदार और उत्कृष्ट संचारक (communicator) हैं। आप अंतर्ज्ञानी (intuitive) हैं।</p>
+                <p class="mb-2"><strong>चुनौतियाँ:</strong> कभी-कभी, आप अपनी भावनाओं को नज़रअंदाज़ कर सकते हैं (Overthinking) और 'दिल' के बजाय 'दिमाग' में खो सकते हैं। यह आपको दूसरों से थोड़ा दूर (detached) दिखा सकता है।</p>
+                <p><strong>अनुकूलता:</strong> आप हरे (Green) ऑरा (जो भावनात्मक संतुलन लाते हैं) और पीले (Yellow) ऑरा (जो आपकी गंभीर दुनिया में थोड़ी मस्ती लाते हैं) के साथ सबसे अच्छे से घुलते-मिलते हैं।</p>`;
+
+            // Find top trait for certificate
+            let topTrait = "संतुलित (Balanced)";
+            const sortedParams = Object.entries(params)
+                .filter(([key]) => !['A_R', 'A_Y', 'A_G', 'A_B'].includes(key) && params[key] > 75)
+                .sort(([,a],[,b]) => b-a);
+            if (sortedParams.length > 0) {
+                const traitName = sortedParams[0][0];
+                const traitMap = { 'L': 'तार्किक', 'Em': 'सहानुभूतिपूर्ण', 'LDR': 'नेता', 'Rs': 'सहनशील', 'DSC': 'अनुशासित', 'FCS': 'केंद्रित', 'OPT': 'आशावादी' };
+                topTrait = traitMap[traitName] ? `${traitMap[traitName]} (${traitName})` : `${traitName}`;
+            }
+
+            // Final Result Object
+            lastResults = {
+                iqValue: calculatedIQ,
+                iqRating, iqLevelText, auraColor, auraMain: maxAura, auraMeaning: auraColor.split('(')[1].replace(')',''), topTrait,
+                priorityText: params.Ms > params.InnerPeace ? 'भौतिक सफलता' : 'आंतरिक शांति',
+                timeTakenText: `टेस्ट ${Math.floor(timeTakenSeconds / 60)} मिनट ${timeTakenSeconds % 60} सेकंड में पूरा हुआ।`,
+                natureText, compatibilityText, controlInsightText, auraMeaningText,
+                
+                // All 16 parameters for the bar chart
+                barChartData: {
+                    'Control Power': params.Cp,
+                    'Creativity': Math.round((params.Dreamer + params.CUR) / 2), // v6: Updated logic
+                    'Risk Appetite': Math.round((params.Impulsive + params.Ff) / 2),
+                    'Energy Level': Math.round((params.E + params.Impulsive) / 2),
+                    'Resilience': params.Rs,
+                    'Empathy': params.Em,
+                    'Adaptability': params.ADP,
+                    'Discipline': params.DSC,
+                    'Ambition': params.AMB,
+                    'Patience': params.PAT,
+                    'Focus': params.FCS,
+                    'Social Acuity': params.SA,
+                    'Curiosity': params.CUR,
+                    'Self-Awareness': params.SWA,
+                    'Leadership': params.LDR,
+                    'Optimism': params.OPT
+                }
+            };
+            return lastResults;
+        }
+
+        // --- v6: Chart.js Drawing Function (Bar Chart) ---
+        function drawCharts(barChartData) {
+            // Destroy old charts if they exist
+            Object.values(chartObjects).forEach(chart => chart.destroy());
+            
+            const isDark = document.documentElement.classList.contains('dark');
+            const textColor = isDark ? '#e2e8f0' : '#1f2937';
+            const gridColor = isDark ? '#374151' : '#e5e7eb';
+            
+            const labels = Object.keys(barChartData);
+            const data = Object.values(barChartData);
+            
+            // Dynamic colors for each bar
+            const backgroundColors = data.map(value => {
+                const intensity = value / 100;
+                return `rgba(79, 70, 229, ${intensity * 0.8 + 0.2})`; // Indigo, more intense for higher values
+            });
+            const borderColors = data.map(() => `rgba(79, 70, 229, 1)`);
+
+            const barChartCtx = document.getElementById('barChartParameters').getContext('2d');
+            chartObjects.barChart = new Chart(barChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'पैरामीटर स्कोर',
+                        data: data,
+                        backgroundColor: backgroundColors,
+                        borderColor: borderColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y', // Horizontal bar chart
+                    responsive: true,
+                    maintainAspectRatio: false, // Allow chart to fill container height
+                    aspectRatio: 1, // Adjust based on 16 items
+                    plugins: {
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: 'आपके 16 प्रमुख व्यक्तित्व पैरामीटर्स',
+                            color: textColor,
+                            font: { size: 18, weight: 'bold' }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${context.raw}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: gridColor },
+                            ticks: { color: textColor, font: { size: 12 } }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { color: textColor, font: { size: 14 } } // Larger font for labels
+                        }
+                    }
+                }
+            });
+            // Set explicit height for the canvas container based on 16 items
+            document.getElementById('barChartParameters').style.height = '600px';
+        }
+
+        function updateChartColors() {
+             const isDark = document.documentElement.classList.contains('dark');
+             const textColor = isDark ? '#e2e8f0' : '#1f2937';
+             const gridColor = isDark ? '#374151' : '#e5e7eb';
+
+            if (chartObjects.barChart && chartObjects.barChart.options) {
+                const chart = chartObjects.barChart;
+                chart.options.plugins.title.color = textColor;
+                chart.options.scales.x.ticks.color = textColor;
+                chart.options.scales.y.ticks.color = textColor;
+                chart.options.scales.x.grid.color = gridColor;
+                chart.update();
+            }
+        }
+
+        // --- Progress Bar Update Function ---
+        function updateProgressBar() {
+            const form = document.getElementById('quizForm');
+            const checkedCount = form.querySelectorAll('input[type="radio"]:checked').length;
+            const total = questions.length;
+            const pct = Math.round((checkedCount / total) * 100);
+            
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = `${pct}%`;
+            progressBar.textContent = `${pct}% (${checkedCount}/${total})`;
+        }
+        
+        // --- Share and Save Functions ---
+        function showNotification() {
+            const notification = document.getElementById('shareNotification');
+            notification.classList.remove('translate-x-full', 'opacity-0');
+            notification.classList.add('translate-x-0', 'opacity-100');
+            
+            setTimeout(() => {
+                notification.classList.add('translate-x-full', 'opacity-0');
+                notification.classList.remove('translate-x-0', 'opacity-100');
+            }, 3000);
+        }
+
+        function shareResults() {
+            const r = lastResults;
+            const b = r.barChartData;
+            const barDataSummary = Object.entries(b)
+                .map(([key, value]) => `• ${key}: ${value}%`)
+                .join('\n');
+                
+            const summary = `
+मेरा व्यापक साइकोमेट्रिक विश्लेषण परिणाम (v6):
+
+✨ मुख्य प्रोफ़ाइल ✨
+• अनुमानित IQ स्कोर: ${r.iqValue} (${r.iqRating})
+• ऑरा रंग: ${r.auraColor}
+• जीवन की प्राथमिकता: ${r.priorityText}
+• लिया गया समय: ${r.timeTakenText}
+
+📊 16 पैरामीटर सारांश 📊
+${barDataSummary}
+
+💡 मुख्य अंतर्दृष्टि 💡
+• ऑरा का अर्थ: ${r.auraMeaningText.replace(/<[^>]*>/g, '').trim()}
+• स्वभाव: ${r.natureText}
+
+यह टेस्ट यहाँ दें: [Your App Link Here]
+            `;
+            
+            navigator.clipboard.writeText(summary.trim()).then(() => {
+                showNotification();
+            }).catch(err => console.error('Failed to copy: ', err));
+        }
+
+        function saveAsPdf() {
+            window.print();
+        }
+        
+        // --- v6: Professional Certificate Generation Function ---
+        async function generateCertificate() {
+            const nameInput = document.getElementById('certificateNameInput');
+            const errorEl = document.getElementById('certificateError');
+            const name = nameInput.value.trim();
+            
+            if (!name) {
+                errorEl.classList.remove('hidden');
+                nameInput.focus();
+                return;
+            }
+            errorEl.classList.add('hidden');
+
+            const btn = document.getElementById('generateCertificateBtn');
+            btn.textContent = 'जनरेट हो रहा है...';
+            btn.disabled = true;
+
+            // 1. Populate the hidden certificate template
+            const r = lastResults;
+            document.getElementById('cert-name').textContent = name;
+            document.getElementById('cert-iq-score').textContent = r.iqValue;
+            document.getElementById('cert-iq-rating').textContent = `(${r.iqRating})`;
+            document.getElementById('cert-aura').textContent = r.auraMain;
+            document.getElementById('cert-aura-meaning').textContent = `(${r.auraMeaning})`;
+            document.getElementById('cert-top-trait').textContent = r.topTrait;
+            document.getElementById('cert-date').textContent = new Date().toLocaleDateString('en-GB'); // dd/mm/yyyy
+
+            // 2. Add to Leaderboard (Only on successful generation)
+            addToLeaderboard(name, r.iqValue, r.auraMain);
+
+            // 3. Use html2canvas to capture the template
+            try {
+                const canvas = await html2canvas(document.getElementById('certificateTemplate'), {
+                    scale: 2 // Higher resolution
+                });
+                
+                // 4. Create a download link
+                const link = document.createElement('a');
+                link.download = `${name.replace(/ /g, '_')}_Psychometric_Certificate.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click(); // Trigger download
+                
+            } catch (err) {
+                console.error("Certificate generation failed:", err);
+                alert("सर्टिफिकेट बनाने में कोई त्रुटि हुई।");
+            } finally {
+                 // 5. Reset button
+                btn.textContent = 'सर्टIFICATE जनरेट करें';
+                btn.disabled = false;
+            }
+        }
+
+        // --- Event Listeners and Initial Setup ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Initial Theme Setup
+            if (localStorage.getItem('theme') === 'dark' || (!('theme'in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('themeToggle').checked = true;
+            } else {
+                document.documentElement.classList.add('light');
+            }
+
+            // 2. Theme Toggle Listener
+            document.getElementById('themeToggle').addEventListener('change', toggleTheme);
+            
+            // 3. NEW: Leaderboard Toggle Listener
+            document.getElementById('leaderboardToggleBtn').addEventListener('click', () => {
+                document.getElementById('leaderboardSection').classList.toggle('hidden');
+            });
+            
+            // 4. NEW: Display Leaderboard on Load
+            displayLeaderboard();
+            
+            // 5. Generate Quiz Form
+            generateQuizForm();
+            
+            // 6. Start Quiz Button
+            document.getElementById('startQuizBtn').addEventListener('click', () => {
+                const ageInput = document.getElementById('userAge');
+                const age = parseInt(ageInput.value);
+
+                if (age >= 10 && age <= 99) {
+                    userAge = age; // Store the user's age
+                    switchView('quiz');
+                    startTimer(); // NEW: Start the timer
+                } else {
+                    ageInput.focus();
+                }
+            });
+
+            // 7. Submit Quiz Button
+            document.getElementById('submitQuizBtn').addEventListener('click', (e) => {
+                e.preventDefault(); 
+                
+                // NEW: Stop the timer
+                clearInterval(timerInterval);
+                document.getElementById('timer').classList.add('hidden');
+                
+                const form = document.getElementById('quizForm');
+                let allAnswered = true;
+                for (let i = 1; i <= questions.length; i++) {
+                    const selector = `input[name="q${i}"]:checked`;
+                    if (!form.querySelector(selector)) {
+                        allAnswered = false;
+                        break;
+                    }
+                }
+                
+                if (!allAnswered) {
+                    document.getElementById('error-message').classList.remove('hidden');
+                    window.scrollTo({ top: document.getElementById('quizScreen').offsetTop, behavior: 'smooth' });
+                    // Restart timer if they fail submission? No, let it be.
+                    return;
+                }
+                document.getElementById('error-message').classList.add('hidden');
+                
+                switchView('loading');
+
+                setTimeout(() => {
+                    // NEW: Pass timeTakenInSeconds to results
+                    const results = calculateResults(timeTakenInSeconds);
+                
+                    if (results) {
+                        // Populate results
+                        document.getElementById('iqValueText').textContent = results.iqValue;
+                        document.getElementById('iqRatingDisplay').textContent = results.iqRating;
+                        document.getElementById('timeTakenDisplay').textContent = results.timeTakenText; // NEW
+                        document.getElementById('iqLevelText').textContent = results.iqLevelText;
+                        document.getElementById('auraColorText').textContent = results.auraColor.split(' ')[0];
+                        document.getElementById('priorityText').textContent = results.priorityText;
+                        
+                        document.getElementById('natureText').innerHTML = results.natureText;
+                        document.getElementById('compatibilityText').innerHTML = results.compatibilityText;
+                        document.getElementById('controlInsightText').innerHTML = results.controlInsightText;
+                        document.getElementById('auraMeaningText').innerHTML = results.auraMeaningText; // v6: Now has HTML
+
+                        switchView('results');
+                        
+                        // Draw bar chart *after* the view is visible
+                        drawCharts(results.barChartData);
+                    }
+                }, 1500); // 1.5 second loading simulation
+            });
+
+            // 8. Add listeners for new buttons
+            document.getElementById('quizForm').addEventListener('change', updateProgressBar);
+            document.getElementById('shareBtn').addEventListener('click', shareResults);
+            document.getElementById('savePdfBtn').addEventListener('click', saveAsPdf);
+            document.getElementById('generateCertificateBtn').addEventListener('click', generateCertificate); 
+
+            // Start on the age input screen
+            switchView('ageInput');
+        });
+    </script>
+</body>
+</html>
